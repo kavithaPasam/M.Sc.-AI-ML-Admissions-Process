@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hall Ticket Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .ticket {
+      width: 794px;
+      background: white;
+      padding: 20px;
+      margin: 0 auto;
+      border: 1px solid #000;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td {
+      padding: 5px;
+      vertical-align: top;
+    }
+    input[type="text"] {
+      width: 95%;
+      padding: 5px;
+      font-size: 14px;
+    }
+    .photo {
+      width: 100px;
+      height: 120px;
+      border: 1px solid #000;
+      background-color: #eee;
+      object-fit: cover;
+    }
+    .signature-box {
+      width: 250px;
+      height: 40px;
+      border: 1px solid #000;
+      margin-top: 8px;
+    }
+    .small {
+      font-size: 12px;
+    }
+    .upload-label {
+      font-size: 12px;
+    }
+    .download-btn {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .convener-section {
+      text-align: right;
+      margin-top: 10px;
+    }
+    .convener-sign {
+      width: 120px;
+      display: block;
+      margin-left: auto;
+      margin-bottom: 5px;
+    }
+    ol {
+      padding-left: 18px;
+    }
+    .logo {
+      width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="ticket" id="ticket">
+  <img src="https://media.licdn.com/dms/image/v2/C560BAQEU6md--KzZWw/company-logo_200_200/company-logo_200_200/0/1636342149802?e=2147483647&v=beta&t=d59t4bCZVM8ioEpe0OjECquJPa7q2Mxbp9YuQvJGm_E" class="logo" alt="College Logo">
+
+  <div style="text-align: center; line-height: 1.5;">
+    <div style="font-size: 18px; font-weight: bold;">St. Ann's College for Women</div>
+    <div style="font-size: 14px;">(Autonomous), Affiliated to Osmania University</div>
+    <div style="font-size: 16px;">
+      Accredited 'A' Grade with CGPA 3.24/4.00 by NAAC (4th cycle), Mehdipatnam, Hyderabad - 500028
+    </div>
+    <div style="font-size: 18px; font-weight: bold; margin-top: 8px;">
+      M.Sc (AI & ML) Entrance Exam 2025
+    </div>
+  </div>
+
+  <div class="section">
+    <table>
+      <tr>
+        <td colspan="2">
+          <strong>Course Code & Name:</strong>
+          <input type="text" placeholder="e.g., 74 - M.Sc. Nutrition and Dietetics">
+        </td>
+        <td colspan="2">
+          <strong>Hall Ticket No:</strong>
+          <input type="text">
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Candidate’s Name:</strong><br><input type="text"></td>
+        <td><strong>Father’s Name:</strong><br><input type="text"></td>
+        <td><strong>Mother’s Name:</strong><br><input type="text"></td>
+        <td rowspan="5" style="text-align:center;">
+          <span class="exclude-download upload-label">Upload Photo:</span><br>
+          <input type="file" accept="image/*" onchange="loadImage(event, 'photo')" /><br><br>
+          <div id="photo-container" style="margin-top: 0;">
+            <img id="photo" class="photo" src="" alt="">
+          </div>
+          <strong>Signature:</strong>
+          <div class="signature-box"></div>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>DOB (dd-mm-yyyy):</strong><br><input type="text" placeholder="dd-mm-yyyy" maxlength="10" oninput="formatDOB(this)"></td>
+        <td><strong>Category:</strong><br><input type="text"></td>
+        <td><strong>Gender:</strong><br><input type="text"></td>
+      </tr>
+      <tr>
+        <td colspan="3"><strong>Region:</strong><br><input type="text"></td>
+      </tr>
+      <tr>
+        <td colspan="3"><strong>Address:</strong><br><input type="text"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <strong>Test Date & Time:</strong><br><input type="text"><br><br>
+    <strong>Venue:</strong><br><input type="text">
+  </div>
+
+  <div class="section small">
+    <strong>IMPORTANT INSTRUCTIONS TO THE CANDIDATE</strong>
+    <ol>
+      <li>Hall Ticket and ID proof are mandatory for admission.</li>
+      <li>Report 30 minutes early to avoid disqualification.</li>
+      <li>Bring Black/Blue Ball Pen, Hall Ticket, and Valid ID.</li>
+      <li>No entry after exam starts. No early exit.</li>
+      <li>Electronic devices, watches, papers are not allowed.</li>
+      <li>Unfair means lead to cancellation and legal action.</li>
+      <li>Preserve hall ticket till admission.</li>
+      <li>Submit rough sheets after exam.</li>
+    </ol>
+
+    <div class="exclude-download" style="text-align: right;">
+      <label for="convenerSignature">Upload Convener Signature:</label>
+      <input type="file" id="convenerSignature" accept="image/*" onchange="loadImage(event, 'convenerSign')">
+    </div>
+
+    <div class="convener-section">
+      <img id="convenerSign" class="convener-sign" src="" alt="Convener Signature">
+      <div class="convener">Convener</div>
+    </div>
+  </div>
+</div>
+
+<div class="download-btn">
+  <button onclick="downloadPDF()">Download Hall Ticket as PDF</button>
+</div>
+
+<script>
+  function loadImage(event, id) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      document.getElementById(id).src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  function formatDOB(input) {
+    let value = input.value.replace(/\D/g, "").slice(0, 8);
+    if (value.length >= 5) {
+      input.value = value.slice(0, 2) + "-" + value.slice(2, 4) + "-" + value.slice(4);
+    } else if (value.length >= 3) {
+      input.value = value.slice(0, 2) + "-" + value.slice(2);
+    } else {
+      input.value = value;
+    }
+  }
+
+  async function downloadPDF() {
+    const ticket = document.getElementById("ticket");
+    const fileInputs = ticket.querySelectorAll('input[type="file"]');
+    const elementsToHide = ticket.querySelectorAll(".exclude-download");
+    const photoContainer = document.getElementById("photo-container");
+    const originalMarginTop = photoContainer.style.marginTop;
+
+    fileInputs.forEach(input => input.style.display = "none");
+    elementsToHide.forEach(el => el.style.display = "none");
+    photoContainer.style.marginTop = "-40px";
+
+    setTimeout(async () => {
+      const canvas = await html2canvas(ticket, { useCORS: true, scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'pt', 'a4');
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('hall_ticket.pdf');
+
+      fileInputs.forEach(input => input.style.display = "inline");
+      elementsToHide.forEach(el => el.style.display = "");
+      photoContainer.style.marginTop = originalMarginTop;
+    }, 300);
+  }
+</script>
+
+</body>
+</html>
