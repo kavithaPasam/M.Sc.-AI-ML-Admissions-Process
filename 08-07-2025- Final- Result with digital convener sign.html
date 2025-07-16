@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    .rankcard {
+      width: 794px;
+      background: #fff;
+      padding: 20px;
+      margin: auto;
+      border: 1px solid #000;
+    }
+
+    .header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+
+    .left, .right {
+      width: 48%;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 95%;
+      padding: 5px;
+    }
+
+    .photo {
+      width: 100px;
+      height: 120px;
+      border: 1px solid #000;
+      object-fit: cover;
+    }
+
+    .instructions {
+      font-size: 12px;
+      margin-top: 20px;
+    }
+
+    ol {
+      padding-left: 20px;
+    }
+
+    .convener-section {
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    .convener-sign {
+      width: 120px;
+      display: block;
+      margin-left: auto;
+      margin-bottom: 5px;
+    }
+
+    .logo {
+      width: 120px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .upload-label {
+      font-size: 12px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<div class="rankcard" id="rankcard">
+  <img src="https://media.licdn.com/dms/image/v2/C560BAQEU6md--KzZWw/company-logo_200_200/company-logo_200_200/0/1636342149802?e=2147483647&v=beta&t=d59t4bCZVM8ioEpe0OjECquJPa7q2Mxbp9YuQvJGm_E" class="logo" alt="College Logo">
+
+  <div class="header">
+    <div style="font-size: 18px; font-weight: bold;">St. Ann's College for Women</div>
+    <div style="font-size: 14px;">(Autonomous), Affiliated to Osmania University</div>
+    <div style="font-size: 16px;">
+      Accredited 'A' Grade with CGPA 3.24/4.00 by NAAC (4th cycle), Mehdipatnam, Hyderabad - 500028
+    </div>
+    <div style="font-size: 18px; font-weight: bold; margin-top: 10px; text-decoration: underline;">
+      M.Sc (AI & ML) Entrance Exam Result 2025
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="left">
+      <div class="field"><label>Hall Ticket No:</label><br><input type="text"></div>
+      <div class="field"><label>Candidate's Name:</label><br><input type="text"></div>
+      <div class="field"><label>Father's Name:</label><br><input type="text"></div>
+      <div class="field"><label>Mother's Name:</label><br><input type="text"></div>
+      <div class="field"><label>Test Name:</label><br><input type="text" placeholder="e.g., M.Sc. Nutrition & Dietetics"></div>
+      <div class="field"><label>Total Marks:</label><br><input type="text" value="100" readonly></div>
+      <div class="field"><label>Marks Obtained:</label><br><input type="number" id="marks" oninput="checkQualification()"></div>
+      <div class="field"><label>Status:</label><br><input type="text" id="status" readonly></div>
+    </div>
+
+    <div class="right" style="text-align: center;">
+      <div class="field"><label>Category:</label><br><input type="text"></div>
+      <div class="field"><label>Date of Birth (dd-mm-yyyy):</label><br>
+        <input type="text" id="dob" placeholder="dd-mm-yyyy" maxlength="10" oninput="formatDOB(this)">
+      </div>
+      <div class="field"><label>Photo:</label><br>
+        <input type="file" accept="image/*" onchange="loadImage(event, 'photo')"><br>
+        <img id="photo" class="photo">
+      </div>
+    </div>
+  </div>
+
+  <div class="convener-section exclude-download">
+    <label for="convenerSignature">Upload Convener Signature:</label>
+    <input type="file" id="convenerSignature" accept="image/*" onchange="loadImage(event, 'convenerSign')">
+  </div>
+
+  <div class="convener-section">
+    <img id="convenerSign" class="convener-sign" src="" alt="Convener Signature">
+    <div class="convener">Convener</div>
+  </div>
+
+  <div class="instructions">
+    <strong>INSTRUCTIONS TO THE CANDIDATE</strong>
+    <ol>
+      <li>Candidates must produce the required  documents- Contact the admissions office .</li>
+      <li>For any queries, contact the admissions office.</li>
+      <li>Shortlisted candidates will be called soon.</li>
+    </ol>
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+  <button onclick="downloadPDF()">Download Result as PDF</button>
+</div>
+
+<script>
+  function loadImage(event, id) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById(id).src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  function checkQualification() {
+    const marks = parseFloat(document.getElementById('marks').value);
+    const status = document.getElementById('status');
+    if (!isNaN(marks)) {
+      status.value = marks >= 40 ? 'Qualified' : 'Not Qualified';
+    } else {
+      status.value = '';
+    }
+  }
+
+  function formatDOB(input) {
+    let value = input.value.replace(/\D/g, '').slice(0, 8);
+    if (value.length >= 5) {
+      input.value = value.slice(0, 2) + '-' + value.slice(2, 4) + '-' + value.slice(4);
+    } else if (value.length >= 3) {
+      input.value = value.slice(0, 2) + '-' + value.slice(2);
+    } else {
+      input.value = value;
+    }
+  }
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById("rankcard");
+
+    const fileInputs = element.querySelectorAll('input[type="file"]');
+    const elementsToHide = element.querySelectorAll('.exclude-download');
+    fileInputs.forEach(input => input.style.display = 'none');
+    elementsToHide.forEach(el => el.style.display = 'none');
+
+    setTimeout(async () => {
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "pt", "a4");
+
+      const width = pdf.internal.pageSize.getWidth();
+      const height = canvas.height * width / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, width, height);
+      pdf.save("rank_card.pdf");
+
+      fileInputs.forEach(input => input.style.display = 'inline');
+      elementsToHide.forEach(el => el.style.display = '');
+    }, 300);
+  }
+</script>
+
+</body>
+</html>
